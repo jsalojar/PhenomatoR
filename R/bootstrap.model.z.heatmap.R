@@ -72,11 +72,11 @@ bootstrap.model.z.heatmap<-function(dataset,
                                     #second independent variable and corresponding name of control (if present)
                                     covariant2 = NULL, covariant2.control = NULL,
                                     #bootstrapping
-                                    n = 15, iterations = 5,
+                                    n = NULL, iterations = 1,
                                     #fdr adjustment
-                                    z.adjust = NULL,
+                                    p.adjust = NULL,
                                     #data class of phenotype observation
-                                    data.type = "continuous",
+                                    data.types = "continuous",
                                     #how many cores to use
                                     mc.cores = 1L,
                                     #heatmapping
@@ -88,25 +88,41 @@ bootstrap.model.z.heatmap<-function(dataset,
                                     #colours in heatmap
                                     colour = colorRampPalette(c("blue", "white", "firebrick1"))(7),
                                     #heatmap output format
-                                    print.heatmap = TRUE, heatmap.pdf = NULL,
+                                    print.heatmap = TRUE, heatmap.pdf = NULL, pdf.size = c(7, 7),
                                     #clustering
-                                    cluster.row = FALSE, cluster.col = FALSE){
+                                    cluster.row = FALSE, cluster.col = FALSE) {
+  if (length(data.types) > 1 && !length(data.types) == length(phenotypes)) {
+    stop(length(phenotypes), " elements in phenotypes but ", length(data.types), " in data.types")
+  }
+  if (length(data.types) == 1 && !length(data.types) == length(phenotypes)) {
+    warning("all phenotypes are assumed to have ", data.types, " data type")
+    data.types <- rep(data.types, times = length(phenotypes))
+  }
 
   #apply bootstrap.model.z to each phenotype
-  list.bootstrap.model.z<-lapply(phenotypes,
-                          #function
-                          bootstrap.model.z,
-                          #arguments
-                          dataset = dataset,
-                          covariant1 = covariant1, covariant1.control = covariant1.control,
-                          randomeffect = randomeffect, model.formula = model.formula,
-                          covariant2 = covariant2, covariant2.control = covariant2.control,
-                          n = n, iterations = iterations,
-                          z.adjust = z.adjust,
-                          data.type = data.type,
-                          mc.cores = mc.cores)
+  list.bootstrap.model.z <- parallel::mclapply(1:length(phenotypes), function(x) {
+    tryCatch(bootstrap.model.z(dataset = dataset,
+                               phenotype = phenotypes[x],
+                               covariant1 = covariant1, covariant1.control = covariant1.control,
+                               randomeffect = randomeffect, model.formula = model.formula,
+                               covariant2 = covariant2, covariant2.control = covariant2.control,
+                               n = n, iterations = iterations,
+                               p.adjust = p.adjust,
+                               data.type = data.types[x],
+                               mc.cores = mc.cores), error = function (e) {NA})
+  }, mc.cores = mc.cores)
 
-  z.stats<-do.call("rbind", list.bootstrap.model.z)
+  #identify which phenotypes produce errors, if any
+  if (TRUE %in% is.na(list.bootstrap.model.z)) {
+    error.present <- TRUE
+    error.index <- which(is.na(list.bootstrap.model.z))
+    error.phenotypes <- phenotypes[error.index]
+  }
+  else {error.present <- FALSE}
+
+  #compile all non-error outputs into a single data.frame
+  list.bootstrap.model.z <- list.bootstrap.model.z[!is.na(list.bootstrap.model.z)]
+  z.stats <- do.call("rbind", list.bootstrap.model.z)
 
   if (is.null(covariant2) == TRUE && is.null(covariant2.control) == TRUE) {
     wide.df<-plyr::rbind.fill(parallel::mclapply(list.bootstrap.model.z, long.to.wide.df, value = plot.z, row = "phenotype", col = covariant1, mc.cores = mc.cores))
@@ -115,12 +131,18 @@ bootstrap.model.z.heatmap<-function(dataset,
     wide.df<-plyr::rbind.fill(parallel::mclapply(list.bootstrap.model.z, long.to.wide.df, value = plot.z, row = "id", col = covariant1, mc.cores = mc.cores))
   }
 
+  #if errors were present
+  if (error.present == TRUE) {
+    error.df <- data.frame(phenotype = error.phenotypes)
+    wide.df <- plyr::rbind.fill(wide.df, error.df)
+  }
+
   #create heatmap
-  heatmap<-cutz.heatmap(wide.df = wide.df, row.id = "phenotype", column.name = covariant1,
-                        breaks = if (is.null(breaks) == TRUE) {c(range(wide.df[names(wide.df) != "phenotype"], na.rm = TRUE)[1], -2.58, -1.96, -1.65, 1.65, 1.96, 2.58, range(wide.df[names(wide.df) != "phenotype"], na.rm = TRUE)[2])} else {breaks},
-                        labels = labels, colour = colour,
-                        print.heatmap = print.heatmap, heatmap.pdf = heatmap.pdf,
-                        cluster.row = cluster.row, cluster.col = cluster.col)
+  heatmap <- tryCatch(cutz.heatmap(wide.df = wide.df, row.id = "phenotype", column.name = covariant1,
+                                   breaks = breaks, labels = labels, colour = colour,
+                                   print.heatmap = print.heatmap, heatmap.pdf = heatmap.pdf, pdf.size = pdf.size,
+                                   cluster.row = cluster.row, cluster.col = cluster.col),
+                      error = function(e) {NA})
 
   ##compile outputs
   out<-list()
