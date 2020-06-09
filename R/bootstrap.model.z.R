@@ -1,3 +1,84 @@
+#' @title Bootstraps, applies a model and computes z scores
+#'
+#' @description
+#'
+#' \code{bootstrap.model.z} selects and applies a model based on the data type
+#' of the phenotype and then conducts post-hoc analysis to compute the z scores
+#' which estimates the effect sizes of the experimental classes against the
+#' control. Bootstrapping can also be performed.
+#'
+#' @import lme4 multcomp parallel plyr stats
+#'
+#' @param dataset data.frame with columns specifying at least a phenotypic
+#'   trait, covariant(s), and random effect(s) (if present)
+#' @param phenotype character string of column name of a phenotypic trait
+#' @param covariant1 character string of name of column with an independent
+#'   variable
+#' @param covariant1.control character string of the control of covariant1
+#' @param randomeffect character vector of name(s) of column(s) of random
+#'   effect(s)
+#' @param model.formula if default formula entered into the model is incorrect,
+#'   specify formula to be applied in a character string. See details.
+#' @param covariant2 character string of name of second column with another
+#'   independent variable aside from that specified in \code{covariant1}
+#' @param covariant2.control character string of control of covariant2
+#' @param n number of samples to choose with replacement.
+#' @param iterations number of times to repeat sampling
+#' @param p.adjust character vector of p-value adjustment method(s) to perform.
+#'   Methods accepted follow \code{\link[stats]{p.adjust.methods}}.
+#' @param data.type specify either "continuous", "ordinal", or "count"
+#'   corresponding to the phenotypes specified in argument \code{phenotypes}.
+#' @param mc.cores number of cores to use. See \code{\link[parallel]{mclapply}}.
+#'
+#' @details
+#'
+#' \code{bootstrap.model.z} wraps \code{\link[plyr]{ddply}} and
+#' \code{\link[stats]{sample}} for bootstrapping, \code{\link[stats]{lm}},
+#' \code{\link[lme4]{lmer}}, \code{\link[stats]{glm}}, \code{\link[lme4]{glmer}}
+#' for modelling, and \code{\link[multcomp]{glht}} for post-hoc analysis.
+#' \code{\link[stats]{pnorm}} and \code{\link[stats]{qnorm}} are also wrapped
+#' for p- and z-value calculations respectively.
+#'
+#' Bootstrap: By default where \code{n} = NULL and \code{iterations} = 1,
+#' bootstrapping will not be performed. If \code{n} = NULL and \code{iterations}
+#' > 1, resampling size will default to the size of the cleaned sample data (NAs
+#' removed) with replacement and repeated \code{iterations} number of times. If
+#' \code{n} > 0 and \code{iterations} > 1, \code{n} resamples are drawn with
+#' replacement and repeated \code{iterations} number of times. Resamples of the
+#' user-specified phenotype are drawn from every possible permutation of
+#' covariant(s) and random effect(s).
+#'
+#' Model: Ordinal data types are assumed to have equal distances between ordinal
+#' levels. Therefore, for both data types "continuous" and "ordinal", linear and
+#' linear mixed effects models are used where random effects are absent and
+#' present respectively. For count data, general linear and general linear mixed
+#' effects model are used. The selected model will be applied for every
+#' iteration. Random effects can be specified in \code{randomeffect} and the
+#' default formula is written as "response ~ terms + (1|random1) + (1|random2) +
+#' ...". Users may overwrite with a different formula through
+#' \code{model.formula}.
+#'
+#' Post-hoc analysis: \code{\link{extract.glht.z}} is used to extract z and p
+#' values from the objects returned from \code{\link[multcomp]{glht}} and neatly
+#' organize the outputs in a single data.frame. Where
+#' \code{\link[stats]{p.adjust.methods}} are indicated in argument
+#' \code{p.adjust}, \code{extract.glht.z} extracts p values from every iteration
+#' and computes the z scores and their means and standard deviations across
+#' iterations for every level of the covariant(s).
+#'
+#' @return
+#'
+#' A data.frame with columns indicating the covariant(s), z and p values, z- and
+#' p-adjusted values if \code{\link[stats]{p.adjust.methods}} were indicated, as
+#' well as the standard deviations of z scores if iterations > 1.
+#'
+#' @example
+#' ##Using PSIdata
+#' bootstrap.model.z(dataset = PSIdata, phenotype = "AREA_PX", covariant1 = "Plant.Info", covariant1.control = "Col-0", randomeffect = "Tray.ID", p.adjust = c("fdr", "hochberg"))
+#'
+#' ##Using stomatadata (2 covariants)
+#' bootstrap.model.z(dataset = stomatadata, phenotype = "Density(n.stomata/mm2)", covariant1 = "Genotypes", covariant1.control = "Col-0", covariant2 = "Chemical", covariant2.control = "Control")
+#'
 #' @export
 bootstrap.model.z<-function(dataset,
                             #phenotype observations
@@ -41,7 +122,7 @@ bootstrap.model.z<-function(dataset,
   if (is.null(n) == TRUE && iterations == 1) { #no bootstrapping
     list.iterations[[iterations]] <- trim.data
   }
-  if (iterations > 1) { #bootstrapping
+  else { #bootstrapping
     #pasting backticks to specified covariant(s) and randomeffect(s)
     variables.covariant1 <- paste("`", covariant1, "`", sep = "")
     if (is.null(randomeffect) == FALSE) {
@@ -192,7 +273,7 @@ bootstrap.model.z<-function(dataset,
   }
 
   #generalized linear model
-  if (data.type == "nominal"
+  if (data.type == "count"
       && is.null(randomeffect) == TRUE
       && is.null(covariant2) == TRUE && is.null(covariant2.control) == TRUE) {
     list.glm<-parallel::mclapply(list.iterations, stats::glm,
@@ -212,7 +293,7 @@ bootstrap.model.z<-function(dataset,
                                   linfct = K,
                                   mc.cores = mc.cores)
   }
-  else if (data.type == "nominal"
+  else if (data.type == "count"
            && is.null(randomeffect) == TRUE
            && is.null(covariant2) == FALSE && is.null(covariant2.control) == FALSE) {
     list.glm<-parallel::mclapply(list.iterations, stats::glm,
@@ -245,7 +326,7 @@ bootstrap.model.z<-function(dataset,
   }
 
   #generalized linear mixed effect model
-  if (data.type == "nominal"
+  if (data.type == "count"
       && is.null(randomeffect) == FALSE
       && is.null(covariant2) == TRUE && is.null(covariant2.control) == TRUE) {
 
@@ -277,7 +358,7 @@ bootstrap.model.z<-function(dataset,
                                   linfct = K,
                                   mc.cores = mc.cores)
   }
-  else if (data.type == "nominal"
+  else if (data.type == "count"
            && is.null(randomeffect) == FALSE
            && is.null(covariant2) == FALSE && is.null(covariant2.control) == FALSE) {
 

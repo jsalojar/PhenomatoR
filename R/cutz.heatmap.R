@@ -1,5 +1,46 @@
+#' @title Cuts z scores and draws a heatmap
+#'
+#' @description
+#'
+#' This function draws non-clustered heatmaps with
+#' \code{\link[ggplot2]{geom_tile}} and clustered heatmaps with
+#' \code{\link[gplots]{heatmap.2}}.
+#'
+#' @import ggplot2 gplots graphics grDevices reshape2
+#'
+#' @param wide.df data.frame of z values to be plotted, wherein 1 column
+#'   contains values that specifies the heatmap y axis tick (row) labels
+#' @param column.name character string which specifies the name of the x axis
+#' @param row.id character string of name of column with y axis tick (row) labels
+#' @param breaks numeric vector with elements indicating intervals at which z
+#'   values are to be categorized and plotted in the heatmap. By default, z
+#'   value intervals are: z<-2.58, -2.58<z<-1.96, -1.96<z<-1.65, -1.65<z<1.65,
+#'   1.65<z<1.96, 1.96<z<2.58, z<2.58.
+#'
+#'   The format to specify customised breaks depends on whether clustering is
+#'   performed. For heatmap clustering and no clustering, \code{breaks} are
+#'   passed to \code{\link[gplots]{heatmap.2}} and \code{\link[base]{cut}}
+#'   respectively.
+#' @param labels labels for the categories after breaking
+#' @param colour colours for each category after breaking
+#' @param print.heatmap if TRUE, heatmap is returned by function
+#' @param heatmap.pdf indicate file path and name if heatmap is to be saved in
+#'   pdf format
+#' @param pdf.size numeric vector of 2 elements which denote the width and
+#'   height of the pdf file respectively
+#' @param cluster.row logical indicating whether to cluster heatmap rows
+#' @param cluster.col logical indicating whether to cluster heatmap columns
+#'
+#' @return ggplot object is returned if no clustering and \code{print.heatmap} = TRUE.
+#'
+#' @example
+#' require(purrr)
+#' bootstrap.model.z(dataset = stomatadata, phenotype = "Density(n.stomata/mm2)", covariant1 = "Genotypes", covariant1.control = "Col-0", covariant2 = "Chemical", covariant2.control = "Control") %>%
+#' long.to.wide.df(value = "z", row = "id", col = "Genotypes") %>%
+#' cutz.heatmap(column.name = "Genotypes", row.id = "phenotype")
+#'
 #' @export
-cutz.heatmap<-function(wide.df, column.name, row.id = "phenotype",
+cutz.heatmap<-function(wide.df, column.name, row.id,
                        breaks = NULL,
                        labels = c("z<-2.58, p<0.01", "z<-1.96, p<0.05", "z<-1.65, p<0.10", "-1.65<z<1.65, random", "z>1.65, p>0.10", "z>1.96, p>0.05", "z>2.58, p>0.01"),
                        colour = colorRampPalette(c("blue", "white", "firebrick1"))(7),
@@ -51,7 +92,7 @@ cutz.heatmap<-function(wide.df, column.name, row.id = "phenotype",
     row.nas <- rowSums(is.na(matrix[,1:ncol(matrix)])) == ncol(matrix)
     remove.row <- names(row.nas[row.nas == TRUE])
     if (length(remove.row) > 0) {
-      warning("row(s) ", remove.row, " removed because all NAs")
+      warning("row(s) ", paste(remove.row, collapse = ", "), " removed because all NAs")
       matrix <- matrix[row.nas == FALSE,]
     }
 
@@ -59,7 +100,7 @@ cutz.heatmap<-function(wide.df, column.name, row.id = "phenotype",
     col.nas <- colSums(is.na(matrix[1:nrow(matrix),])) == nrow(matrix)
     remove.col <- names(col.nas[col.nas == TRUE])
     if (length(remove.col) > 0) {
-      warning("column(s) ", remove.col, " removed because all NAs")
+      warning("column(s) ", paste(remove.col, collapse = ", "), " removed because all NAs")
       matrix <- matrix[,col.nas == FALSE]
     }
 
@@ -86,7 +127,7 @@ cutz.heatmap<-function(wide.df, column.name, row.id = "phenotype",
                                lmat = rbind(c(4, 3, 0), c(2, 1, 0)),
                                lwid = c(1.5, 4, 3), lhei = c(1,2),
                                ...)
-    legend(legend = labels, fill = colour, x = 0.55, y = 1, cex = 0.75, ncol = 2)
+    graphics::legend(legend = labels, fill = colour, x = 0.55, y = 1, cex = 0.75, ncol = 2)
   }
 
   ##compile outputs
