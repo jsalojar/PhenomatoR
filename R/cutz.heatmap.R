@@ -3,7 +3,7 @@ cutz.heatmap<-function(wide.df, column.name, row.id = "phenotype",
                        breaks = NULL,
                        labels = c("z<-2.58, p<0.01", "z<-1.96, p<0.05", "z<-1.65, p<0.10", "-1.65<z<1.65, random", "z>1.65, p>0.10", "z>1.96, p>0.05", "z>2.58, p>0.01"),
                        colour = colorRampPalette(c("blue", "white", "firebrick1"))(7),
-                       print.heatmap = TRUE, heatmap.pdf = NULL,
+                       print.heatmap = TRUE, heatmap.pdf = NULL, pdf.size = c(7, 7),
                        cluster.row = FALSE, cluster.col = FALSE,
                        ...) {
 
@@ -42,19 +42,37 @@ cutz.heatmap<-function(wide.df, column.name, row.id = "phenotype",
 
   #heatmap.2
   if (cluster.row == TRUE | cluster.col == TRUE) {
+
+    #change wide.df data.frame to matrix
     matrix<-as.matrix(wide.df[,names(wide.df)!=row.id])
     rownames(matrix)<-wide.df[,row.id]
 
-    #assign breaks if not specified
-    if (is.null(breaks) == TRUE) {
-      min<-range(wide.df[names(wide.df)!=row.id], na.rm = TRUE)[1]
-      max<-range(wide.df[names(wide.df)!=row.id], na.rm = TRUE)[2]
-      breaks<-c(-3.5, -2.58, -1.96, -1.65, 1.65, 1.96, 2.58, 3.5)
-      if (min < breaks[1]) {breaks[1]<-min}
-      if (max > breaks[length(breaks)]) {breaks[length(breaks)]<-max}
+    #remove rows with all NAs
+    row.nas <- rowSums(is.na(matrix[,1:ncol(matrix)])) == ncol(matrix)
+    remove.row <- names(row.nas[row.nas == TRUE])
+    if (length(remove.row) > 0) {
+      warning("row(s) ", remove.row, " removed because all NAs")
+      matrix <- matrix[row.nas == FALSE,]
     }
 
-    heatmap<-gplots::heatmap.2(matrix,
+    #remove columns with all NAs
+    col.nas <- colSums(is.na(matrix[1:nrow(matrix),])) == nrow(matrix)
+    remove.col <- names(col.nas[col.nas == TRUE])
+    if (length(remove.col) > 0) {
+      warning("column(s) ", remove.col, " removed because all NAs")
+      matrix <- matrix[,col.nas == FALSE]
+    }
+
+    #assign breaks if not specified
+    if (is.null(breaks) == TRUE) {
+      min <- range(wide.df[names(wide.df)!=row.id], na.rm = TRUE)[1]
+      max <- range(wide.df[names(wide.df)!=row.id], na.rm = TRUE)[2]
+      breaks <- c(-3.5, -2.58, -1.96, -1.65, 1.65, 1.96, 2.58, 3.5)
+      if (min < breaks[1]) {breaks[1] <- min}
+      if (max > breaks[length(breaks)]) {breaks[length(breaks)] <- max}
+    }
+
+    heatmap <- gplots::heatmap.2(matrix,
                                dendrogram = if (cluster.row == TRUE && cluster.col == FALSE) {"row"}
                                else if (cluster.row == FALSE && cluster.col == TRUE) {"column"}
                                else if (cluster.row == TRUE && cluster.col == TRUE) {"both"},
@@ -68,15 +86,18 @@ cutz.heatmap<-function(wide.df, column.name, row.id = "phenotype",
                                lmat = rbind(c(4, 3, 0), c(2, 1, 0)),
                                lwid = c(1.5, 4, 3), lhei = c(1,2),
                                ...)
-    legend(legend = labels, fill = colorRampPalette(c("blue", "white", "firebrick1"))(7),
-           x = 0.6, y = 1, cex = 0.75, ncol = 2)
+    legend(legend = labels, fill = colour, x = 0.55, y = 1, cex = 0.75, ncol = 2)
   }
 
   ##compile outputs
   #save heatmap as pdf or not
   if (is.null(heatmap.pdf) == FALSE){
-    pdf(paste0(heatmap.pdf))
-    print(heatmap)
+    grDevices::pdf(file = paste0(heatmap.pdf), width = pdf.size[1], height = pdf.size[2])
+    if (cluster.row == FALSE && cluster.col == FALSE) {print(heatmap)}
+    else {
+      eval(heatmap$call)
+      legend(legend = labels, fill = colour, x = 0.55, y = 1, cex = 0.75, ncol = 2)
+    }
     dev.off()
   }
 

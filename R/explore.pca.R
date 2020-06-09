@@ -1,4 +1,5 @@
 #' @export
+#eg. save<-explore.pca(matrix = t(E2), PC = c(1, 2), ranks = 5)
 explore.pca<-function(matrix, PC = c(1, 2), ranks = ncol(matrix)) {
 
   if (ranks > ncol(matrix)) stop("maximum ranks allowed = ", ncol(matrix))
@@ -53,7 +54,9 @@ explore.pca<-function(matrix, PC = c(1, 2), ranks = ncol(matrix)) {
 }
 
 #' @export
-explore.pca2<-function(df = E4, value = "value", genes = "gene", samples = "treatment.time", category = "treatment", PC = c(1, 2), ranks = length(unique(df[,genes]))) {
+#eg. explore.pca2(E4)
+explore.pca2<-function(df = E4, value = "value", genes = "gene", samples = "treatment.time", category = "treatment",
+                       PC = c(1, 2), ranks = length(unique(df[,genes]))) {
 
   if (ranks > length(unique(df[,genes]))) stop("maximum ranks allowed = ", length(unique(df[,genes])))
 
