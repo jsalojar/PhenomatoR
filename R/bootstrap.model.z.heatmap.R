@@ -1,66 +1,89 @@
-#' @title Convert dataset into z scores and generate a heatmap
+#' @title Bootstraps, applies a model, computes z scores, and then visualizes
+#'   the z scores in a heatmap
 #'
 #' @description
 #'
+#' \code{bootstrap.model.z.heatmap} takes a dataset, bootstraps specified
+#' variables (optional), applies a model based on the data type, performs
+#' post-hoc analysis to compute z scores to estimate the statistical distance of
+#' the experimental classes against the control, and then plots these z scores
+#' in a heatmap.
+#'
 #' \code{bootstrap.model.z.heatmap} is a wrapper of
-#' \code{\link{bootstrap.model.z}}.
+#' \code{\link{bootstrap.model.z}}, \code{\link{long.to.wide.df}} and
+#' \code{\link{cutz.heatmap}}.
 #'
-#' \code{bootstrap.model.z.heatmap} draws \code{n} number of samples randomly with
-#' replacement from the specified \code{phenotype}(s) per genotype found in
-#' column \code{genotype}. If random effect(s) are present, samples are drawn
-#' for all possible permutations of the genotypes and random effect(s) found in
-#' the columns specified in \code{genotype} and \code{randomeffect}
-#' respectively. The sampling is repeated \code{iterations} number of times. The
-#' samples are then fed into a linear model or linear mixed effect model should
-#' random effect(s) be absent or present respectively. z scores are calculated
-#' using general linear hypothesis testing and averaged across all iterations to
-#' provide estimates of the effect sizes of each mutant genotype against the
-#' \code{control} (wild-type). The averaged z scores are summarised in a
-#' data.frame and visualized in a heatmap (if indicated by user).
+#' @import ggplot2 gplots graphics grDevices multcomp lme4 parallel plyr
+#'   reshape2 stats
 #'
-#' @import ggplot2 grDevices multcomp lme4 plyr reshape2 stats
-#'
-#' @param dataset data.frame with multiple columns specifying each phenotypic
-#'   trait, one column specifying genotypes, and another column specifying the
-#'   random effect (if present)
-#' @param genotype column name in rawdata that contains the genotypes (wild-type
-#'   and mutants) as a character string
-#' @param control name of the control (wild-type) (character string)
-#' @param phenotype column name indicating values of a phenotypic trait to be
-#'   analysed (character string)
-#' @param vector.of.phenotypes character vector of phenotypes to be analysed
-#' @param randomeffect column name in rawdata containing levels of random effect
-#'   (character string)
-#' @param z.adjust
-#' @param n number of samples to choose
+#' @param dataset data.frame with columns specifying phenotypic trait(s),
+#'   covariant(s), and random effect(s) (if present)
+#' @param phenotypes character vector of column names of phenotypic traits
+#' @param covariant1 character string of name of column with an independent
+#'   variable
+#' @param covariant1.control character string of the control of covariant1
+#' @param randomeffect character vector of name(s) of column(s) of random
+#'   effect(s)
+#' @param model.formula if default formula entered into the model is incorrect,
+#'   specify formula to be applied in a character string. See details of
+#'   \code{\link{bootstrap.model.z}}.
+#' @param covariant2 character string of name of second column with another
+#'   independent variable aside from that specified in \code{covariant1}
+#' @param covariant2.control character string of control of covariant2
+#' @param n number of samples to choose with replacement. To sample at size
+#'   equivalent to size of data, leave value at NULL and indicate no. of
+#'   iterations (must be more than 1) in the next argument, \code{iterations}.
 #' @param iterations number of times to repeat sampling
-#' @param parallel if TRUE, apply function in parallel
-#' @param print.heatmap if TRUE, heatmap is included in function output
-#' @param heatmap.pdf indicate file path if heatmap is to be saved in pdf format
+#' @param p.adjust character vector of p-value adjustment method(s) to perform.
+#'   Methods accepted follow \code{\link[stats]{p.adjust.methods}}.
+#' @param data.types specify "continuous", "ordinal", or "count" in a character
+#'   vector in an order corresponding to the phenotypes specified in argument
+#'   \code{phenotypes}. For eg. if first element in \code{phenotypes} is of
+#'   continuous data type, specify "continuous" in first element of
+#'   \code{data.types}. If only one element is indicated in \code{data.types}
+#'   while multiple elements are specified in \code{phenotypes}, all phenotypes
+#'   will be assumed to have the data type specified.
+#' @param mc.cores number of cores to use. See \code{\link[parallel]{mclapply}}.
+#' @param plot.z which z values to be plotted in heatmap. For the p-value
+#'   adjustment method(s) specified in \code{p.adjust}, indicate desired z
+#'   values to be plotted by pasting method in front of ".z". For eg. "holm.z".
+#'   To plot z values with no adjustments, leave at default value of "z".
+#' @param breaks numeric vector with elements indicating intervals at which z
+#'   values are to be categorized and plotted in the heatmap. By default, z
+#'   value intervals are: z<-2.58, -2.58<z<-1.96, -1.96<z<-1.65, -1.65<z<1.65,
+#'   1.65<z<1.96, 1.96<z<2.58, z<2.58.
 #'
-#' @return 1. data.frame of mean z scores across all iterations per genotype
-#'   (column) per phenotype (row)
+#'   The format to specify customised breaks depends on whether clustering is
+#'   performed. For heatmap clustering and no clustering, \code{breaks} are
+#'   passed to \code{\link[gplots]{heatmap.2}} and \code{\link[base]{cut}}
+#'   respectively.
+#' @param labels labels for the categories after breaking
+#' @param colour colours for each category after breaking
+#' @param print.heatmap if TRUE, heatmap is returned by function
+#' @param heatmap.pdf indicate file path and name if heatmap is to be saved in
+#'   pdf format
+#' @param pdf.size numeric vector of 2 elements which denote the width and
+#'   height of the pdf file respectively
+#' @param cluster.row logical indicating whether to cluster heatmap rows
+#' @param cluster.col logical indicating whether to cluster heatmap columns
 #'
-#'   (2. if specified by user, a heatmap printed as output of function)
 #'
-#'   (3. if specified by user, a heatmap saved in pdf format)
+#' @return A list with the following elements:
 #'
-#' @examples
-#' some.dataset<-data.frame(batches = rep(c("batch1", "batch2", "batch3", "batch4", "batch5"), each = 6),
-#'  zones = rep(c("zone1", "zone2", "zone3", "zone4", "zone5", "zone6"), times = 5),
-#'  classes = c("Cntrl", "mutant-x", "mutant-y"),
-#'  length = rnorm(30, mean = 10),
-#'  width = rnorm(30, mean = 2),
-#'  height = rnorm(30, mean = 5))
-#' sample.model.z.gg(some.dataset, "classes", "Cntrl", c("length", "width", "height"), c("batches, "zones"))
-#' ##using dummydata
-#' bootstrap.model.z.gg(dummydata, "Plant.Info", "Col-0", c("AREA_PX", "PERIMETER_PX", "COMPACTNESS", "ROUNDNESS"), "Tray.ID")
+#'   1. Outputs of \code{\link{bootstrap.model.z}} row-binded into a single
+#'   data.frame.
 #'
-#' ##using dat1:4
-#' test.list<-list(paste0("dat", 1:4))
-#' OR
-#' test.list<-list(dat1, dat2, dat3, dat4)
-#' combine.sample.model.z.gg(test.list, omit.col = "OMIT", "Plant.Info", "Col-0", c("AREA_PX", "AREA_MM", "PERIMETER_PX", "PERIMETER_MM", "COMPACTNESS", "ROUNDNESS", "ISOTROPY", "ECCENTRICITY"), "Tray.ID")
+#'   2. Output of \code{\link{long.to.wide.df}}; a data.frame.
+#'
+#'   (3. If specified by user, a heatmap will be printed in R.)
+#'
+#'   If specified by user, the heatmap may be saved in pdf format.
+#'
+#' @example ##using PSIdata bootstrap.model.z.heatmap(dataset = PSIdata,
+#' phenotypes = c("AREA_PX", "PERIMETER_PX", "COMPACTNESS", "ROUNDNESS"),
+#' covariant1 = "Plant.Info", covariant1.control = "Col-0", randomeffect =
+#' "Tray.ID")
+#'
 #' @export
 bootstrap.model.z.heatmap<-function(dataset,
                                     #phenotype observations

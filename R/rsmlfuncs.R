@@ -194,15 +194,15 @@ rootattr <- function(plant, route = list("root", ".attrs")) {
 }
 
 #' @export
-#eg. rootontology(diam$scene$plant)
-#eg. rootontology(taproot1$scene$plant)
+#eg. rootOntology(diam$scene$plant)
+#eg. rootOntology(taproot1$scene$plant)
 rootOntology <- function(plant, route = list("root", ".attrs", "accession"), translate = TRUE) {
   #extract accession values from all roots
   ontology <- extract.from(rsml = plant, route = route)
   ontology <- table(unlist(ontology))
   ontology <- matrix(ontology, nrow = 1, dimnames = list(NULL, names(ontology)))
   if (translate) {
-    colnames(ontology) <- plant.ontology[match(colnames(ontology), plant.ontology[,1]), 2]
+    colnames(ontology) <- plantOntology[match(colnames(ontology), plantOntology[,1]), 2]
   }
   return(ontology)
 }
@@ -283,7 +283,7 @@ drawroots2d <- function(dat, x = "x", y = "y", colour.by = "order", root = "root
   return(plot)
 }
 
-#' @import scales rgl
+#' @import rgl scales
 #'@export
 #eg. drawroots3d(save)
 drawroots3d <- function(dat, x = "x", y = "y", z = "z", colour.by = "order", root = "root", palette = NULL) {
