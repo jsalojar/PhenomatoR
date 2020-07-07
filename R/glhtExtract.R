@@ -27,6 +27,7 @@
 #' require(purrr)
 #' require(lm)
 #' require(multcomp)
+#' data("PSIdata", package = "PhenomatoR")
 #'
 #' res <- PSIdata[, c("AREA_PX", "Plant.Info")] %>%
 #' lm(formula = `AREA_PX` ~ `Plant.Info`, na.action = na.omit) %>%
@@ -37,7 +38,7 @@
 #' @export
 glhtExtract <- function(list.glht, p.adjust = NULL, mc.cores = 1L) {
 
-  if (is.list(list.glht) == FALSE) {stop("data needs to be a list")}
+  if (is.list(list.glht) == FALSE) {stop("place glht-class objects in a list")}
 
   #retrieve z scores without adjustments and compile into matrix - iterations in rows, levels of covariant in columns
   matrix.z <- do.call("rbind", parallel::mclapply(list.glht, function(x) {summary(x)[["test"]][["tstat"]]}, mc.cores = mc.cores))

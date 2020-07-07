@@ -82,10 +82,12 @@
 #'
 #' @examples
 #' ##Using PSIdata
+#' data("PSIdata", package = "PhenomatoR")
 #' bootstrapModelZ(dataset = PSIdata, phenotype = "AREA_PX", covariant1 = "Plant.Info", covariant1.control = "Col-0", random.effects = "Tray.ID", p.adjust = c("fdr", "hochberg"))
 #'
 #' ##Using stomatadata (2 covariants)
-#' bootstrapModelZ(dataset = stomatadata, phenotype = "Density(n.stomata/mm2)", covariant1 = "Genotypes", covariant1.control = "Col-0", covariant2 = "Chemical", covariant2.control = "Control")
+#' data("stomataData", package = "PhenomatoR")
+#' bootstrapModelZ(dataset = stomataData, phenotype = "Density(n.stomata/mm2)", covariant1 = "Genotypes", covariant1.control = "Col-0", covariant2 = "Chemical", covariant2.control = "Control")
 #'
 #' @export
 bootstrapModelZ <- function(dataset,
@@ -107,22 +109,22 @@ bootstrapModelZ <- function(dataset,
                             mc.cores = 1L) {
   #organise data
   trim.data <- dataset[,c(phenotype, covariant1, covariant2, random.effects)] #trim data
-  trim.data[,phenotype]<-as.numeric(trim.data[,phenotype]) #ensure phenotype is numeric
-  trim.data<-trim.data[stats::complete.cases(trim.data[,phenotype]),] #remove rows with NAs
-  trim.data[,covariant1]<-stats::relevel(as.factor(as.character(trim.data[,covariant1])), covariant1.control) #set control as first factor level
+  trim.data[,phenotype] <- as.numeric(trim.data[,phenotype]) #ensure phenotype is numeric
+  trim.data <- trim.data[stats::complete.cases(trim.data[,phenotype]),] #remove rows with NAs
+  trim.data[,covariant1] <- stats::relevel(as.factor(as.character(trim.data[,covariant1])), covariant1.control) #set control as first factor level
   if (is.null(covariant2) == FALSE && is.null(covariant2.control) == FALSE) {
     #check for and remove the levels of covariant1 without data for all levels of covariant2
-    level2.per.level1<-sapply(split(trim.data, trim.data[,covariant1]), function(x){length(table(as.character(x[,covariant2])))})
-    level2.per.level1<-data.frame(level1 = names(level2.per.level1), count = level2.per.level1)
-    trim.data[,covariant2]<-as.factor(as.character(trim.data[,covariant2]))
-    level1.to.remove<-unlist(apply(level2.per.level1, 1, function(x){if (!x["count"] == length(levels(trim.data[,covariant2]))){x["level1"]}}))
-    trim.data<-trim.data[!trim.data[,covariant1] %in% level1.to.remove,]
+    level2.per.level1 <- sapply(split(trim.data, trim.data[,covariant1]), function(x){length(table(as.character(x[,covariant2])))})
+    level2.per.level1 <- data.frame(level1 = names(level2.per.level1), count = level2.per.level1)
+    trim.data[,covariant2] <- as.factor(as.character(trim.data[,covariant2]))
+    level1.to.remove <- unlist(apply(level2.per.level1, 1, function(x){if (!x["count"] == length(levels(trim.data[,covariant2]))){x["level1"]}}))
+    trim.data <- trim.data[!trim.data[,covariant1] %in% level1.to.remove,]
     if (length(level1.to.remove) > 0) {
       warning(paste(level1.to.remove, sep = ", "), " removed due to incomplete data for every level of ", covariant2)
     }
 
-    trim.data[,covariant1]<-stats::relevel(as.factor(as.character(trim.data[,covariant1])), covariant1.control)
-    trim.data[,covariant2]<-stats::relevel(as.factor(as.character(trim.data[,covariant2])), covariant2.control)
+    trim.data[,covariant1] <- stats::relevel(as.factor(as.character(trim.data[,covariant1])), covariant1.control)
+    trim.data[,covariant2] <- stats::relevel(as.factor(as.character(trim.data[,covariant2])), covariant2.control)
   }
 
   #no bootstrapping
@@ -434,14 +436,14 @@ bootstrapModelZ <- function(dataset,
     z.stats1[,covariant2] <- as.factor(rep(levels(trim.data[,covariant2]), each = length(levels(trim.data[,covariant1]))-1))
     z.stats1$control <- paste(covariant1.control, "of", covariant1)
     z.stats1$phenotype <- phenotype
-    z.stats1$id <- apply(z.stats1, 1, function(x){paste(phenotype, "-", covariant1, "under", x[covariant2], "against", x["controls"])})
+    z.stats1$id <- apply(z.stats1, 1, function(x){paste(phenotype, "-", covariant1, "under", x[covariant2], "against", x["control"])})
 
     z.stats2 <- glhtExtract(list.glht = list.glht2, p.adjust = p.adjust, mc.cores = mc.cores)
     z.stats2[,covariant1] <- rep(levels(trim.data[,covariant1]), each = length(levels(trim.data[,covariant2]))-1)
     z.stats2[,covariant2] <- as.factor(rep(levels(trim.data[,covariant2])[-1], times = length(levels(trim.data[,covariant1]))))
     z.stats2$control <- paste(covariant2.control, "of", covariant2)
     z.stats2$phenotype <- phenotype
-    z.stats2$id <- apply(z.stats2, 1, function(x){paste(phenotype, "-", covariant1, "under", x[covariant2], "against", x["controls"])})
+    z.stats2$id <- apply(z.stats2, 1, function(x){paste(phenotype, "-", covariant1, "under", x[covariant2], "against", x["control"])})
 
     z.stats <- rbind(z.stats1, z.stats2)
   }

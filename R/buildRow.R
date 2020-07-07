@@ -15,6 +15,8 @@
 #' @return A single-row matrix or data.frame with number of columns depending on the number of functions applied. Values pertain to the outputs of the functions applied.
 #'
 #' @examples
+#' data("sparse", package = "PhenomatoR")
+#'
 #' ##apply PhenomatoR's functions
 #' buildRow(sparse$scene$plant,
 #'          single.value.functions = c("rootSysLength", "nDescendants"),
@@ -23,9 +25,6 @@
 #'
 #' ##apply base functions
 #' buildRow(sparse$scene$plant, single.value.functions = c("is.list", "is.data.frame", "is.vector"))
-#'
-#' ##trash output; when function in \code{multi.value.functions} outputs a vector instead of a single-row matrix or data.frame
-#' buildRow(sparse$scene$plant, single.value.functions = c("is.list", "is.data.frame", "is.vector"), multi.value.functions = "names")
 #'
 #' @export
 buildRow <- function(plant,

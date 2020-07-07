@@ -16,7 +16,7 @@
 #' @return A numeric value
 #'
 #' @examples
-#' data("sparse")
+#' data("sparse", package = "PhenomatoR")
 #'
 #' rootXSpan(root = sparse$scene$plant$root)
 #' rootSysXSpan(plant = sparse$scene$plant)

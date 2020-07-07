@@ -15,12 +15,16 @@
 #'   the original dataset.
 #'
 #' @examples
-#' data("mildewScreen")
+#' data("mildewScreen", package = "PhenomatoR")
 #'
-#' count.dat <- nominalToCount(mildewScreen, phenotypes = c("BGH_phenotype", "GO_phenotype"), fill.na = "Normal")
+#' count.dat <- nominalToCount(dat = mildewScreen, phenotypes = c("BGH_phenotype", "GO_phenotype"), fill.na = "Normal")
 #' head(count.dat)
 #'
-#' ordinal.dat <- nominalToOrdinal(mildewScreen, phenotypes = c("BGH_phenotype", "GO_phenotype"), orderings = list(c("Normal", "brown coloring of infected leaves", "Chlorotic leaves", "few necrotic spots", "Necrotic spots"), c("Normal", "brown coloring of infected leaves", "Chlorotic leaves", "Necrotic spots")), fill.na = "Normal")
+#' ordinal.dat <- nominalToOrdinal(dat = mildewScreen,
+#'                                 phenotypes = c("BGH_phenotype", "GO_phenotype"),
+#'                                 orderings = list(c("Normal", "brown coloring of infected leaves", "Chlorotic leaves", "few necrotic spots", "Necrotic spots"),
+#'                                                  c("Normal", "brown coloring of infected leaves", "Chlorotic leaves", "Necrotic spots")),
+#'                                 fill.na = "Normal")
 #' head(ordinal.dat)
 #'
 #' @name nominalTo

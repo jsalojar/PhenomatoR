@@ -37,6 +37,8 @@
 #' If clustering is performed and \code{print.heatmap} is TRUE: a list derived from \code{\link[gplots]{heatmap.2}} representing the heatmap
 #'
 #' @examples
+#' data("PSIdata", package = "PhenomatoR")
+#'
 #' ##get data for heatmap
 #' res <- bootstrapModelZHeatmap(dataset = PSIdata,
 #'                               phenotypes = c("AREA_PX", "PERIMETER_PX", "COMPACTNESS", "ROUNDNESS"),
@@ -50,7 +52,7 @@
 #' heatmapper(wide.df = res, column.name = "genotypes", row.id = "phenotype", cluster.row = TRUE, cluster.col = TRUE)
 #'
 #' @export
-heatmapper<-function(wide.df, column.name, row.id,
+heatmapper <- function(wide.df, column.name, row.id,
                        breaks = NULL,
                        labels = c("z<-2.58, p<0.01", "z<-1.96, p<0.05", "z<-1.65, p<0.10", "-1.65<z<1.65, random", "z>1.65, p>0.10", "z>1.96, p>0.05", "z>2.58, p>0.01"),
                        colour = colorRampPalette(c("blue", "white", "firebrick1"))(7),
@@ -60,6 +62,9 @@ heatmapper<-function(wide.df, column.name, row.id,
 
   #ggplot2
   if (cluster.row == FALSE && cluster.col == FALSE) {
+    #plot phenotypes in heatmap with the order in wide.df
+    wide.df$phenotype <- factor(wide.df$phenotype, levels = rev(wide.df$phenotype))
+
     #create data.frame for ggplot2 functions
     melted.df<-reshape2::melt(wide.df, id.vars = row.id, variable.name = column.name, value.name = "z")
     melted.df$z<-as.numeric(melted.df$z)
@@ -95,8 +100,8 @@ heatmapper<-function(wide.df, column.name, row.id,
   if (cluster.row == TRUE | cluster.col == TRUE) {
 
     #change wide.df data.frame to matrix
-    matrix<-as.matrix(wide.df[,names(wide.df)!=row.id])
-    rownames(matrix)<-wide.df[,row.id]
+    matrix <- as.matrix(wide.df[,names(wide.df)!=row.id])
+    rownames(matrix) <- wide.df[,row.id]
 
     #remove rows with all NAs
     row.nas <- rowSums(is.na(matrix[,1:ncol(matrix)])) == ncol(matrix)
@@ -137,7 +142,7 @@ heatmapper<-function(wide.df, column.name, row.id,
                                lmat = rbind(c(4, 3, 0), c(2, 1, 0)),
                                lwid = c(1.5, 4, 3), lhei = c(1,2),
                                ...)
-    graphics::legend(legend = labels, fill = colour, x = 0.55, y = 1, cex = 0.75, ncol = 2)
+    graphics::legend(legend = labels, fill = colour, x = 0.5, y = 1, cex = 0.75, ncol = 2)
   }
 
   ##compile outputs

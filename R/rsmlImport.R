@@ -9,7 +9,7 @@
 #' @examples
 #' path <- system.file("extdata", "rsml", "arabidopsis-simple.rsml", package = "PhenomatoR")
 #' simple <- rsmlImport(path)
-#' View(simple)
+#' ## View(simple)
 #'
 #' @export
 rsmlImport <- function(filepath) {

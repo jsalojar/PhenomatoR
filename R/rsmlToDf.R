@@ -32,7 +32,7 @@
 #'
 #' @export
 rsmlToDf <- function(directory,
-                     single.value.functions = c("rootSysLength", "ndescendants", "rootSysXSpan", "rootSysYSpan", "rootSysZSpan", "rootSysSurfArea", "rootSysVol"),
+                     single.value.functions = c("rootSysLength", "nDescendants", "rootSysXSpan", "rootSysYSpan", "rootSysZSpan", "rootSysSurfArea", "rootSysVol"),
                      single.value.function.labels = c("total root length", "total no. of roots", "x range", "y range", "z range", "total surface area", "total volume"),
                      multi.value.functions = "rootOntology") {
   #import rsml files

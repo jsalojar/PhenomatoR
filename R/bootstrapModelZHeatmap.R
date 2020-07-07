@@ -25,7 +25,7 @@
 #'   effect(s)
 #' @param model.formula if default formula entered into the model is incorrect,
 #'   specify formula to be applied in a character string. See details of
-#'   \code{\link{bootstrap.model.z}}.
+#'   \code{\link{bootstrapModelZ}}.
 #' @param covariant2 character string of name of second column with another
 #'   independent variable aside from that specified in \code{covariant1}
 #' @param covariant2.control character string of control of covariant2
@@ -84,6 +84,7 @@
 #'
 #' @examples
 #' ##using PSIdata
+#' data("PSIdata", package = "PhenomatoR")
 #' (res <- bootstrapModelZHeatmap(dataset = PSIdata,
 #'                                phenotypes = c("AREA_PX", "PERIMETER_PX", "COMPACTNESS", "ROUNDNESS"),
 #'                                covariant1 = "Plant.Info", covariant1.control = "Col-0",
@@ -165,7 +166,7 @@ bootstrapModelZHeatmap <- function(dataset,
   #if errors were present
   if (error.present == TRUE) {
     error.df <- data.frame(phenotype = error.phenotypes)
-    wide.df <- plyr::rbind.fill(wide.df, error.df)
+    wide.df <- plyr::rbind.fill(wide.df[1:(error.index-1),], error.df, wide.df[-(1:(error.index-1)),])
   }
 
   #create heatmap

@@ -22,7 +22,7 @@
 #'
 #' @examples
 #' ##get data.frame of coordinates
-#' data("sparse")
+#' data("sparse", package = "Phenomator")
 #' df <- plotRootSys(sparse$scene$plant)$coordinates
 #'
 #' drawRoots2D(df)

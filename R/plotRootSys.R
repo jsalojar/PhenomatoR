@@ -30,7 +30,7 @@
 #'   plot is generated.
 #'
 #' @examples
-#' data("sparse")
+#' data("sparse", package = "PhenomatoR")
 #' (res <- plotRootSys(sparse$scene$plant))
 #'
 #' @export
