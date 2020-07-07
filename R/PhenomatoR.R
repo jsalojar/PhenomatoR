@@ -18,20 +18,20 @@
 #'   General functions: \code{nominalToCount}, \code{nominalToOrdinal},
 #'   \code{omit}
 #'
-#'   RSML functions: \code{importrsml}, \code{buildarow}, \code{rsmltodf},
-#'   \code{metadf}, \code{nchild}, \code{ndescendants}, \code{extract.from0},
-#'   \code{extract.from}, \code{rootlength}, \code{rootSysLength},
-#'   \code{rootlengths}, \code{rootxspan}, \code{rootSysXSpan},
-#'   \code{rootyspan}, \code{rootSysYSpan}, \code{rootzspan},
-#'   \code{rootSysZSpan}, \code{rootattr}, \code{rootOntology},
-#'   \code{plotRootSys}, \code{drawroots2d}, \code{drawroots3d},
-#'   \code{plantattr}, \code{rootSysSurfArea}, \code{rootSysVol}
+#'   RSML functions: \code{rsmlImport}, \code{buildRow}, \code{rsmlToDf},
+#'   \code{metaToDf}, \code{nChild}, \code{nDescendants}, \code{rsmlExtract0},
+#'   \code{rsmlExtract}, \code{rootLength}, \code{rootSysLength},
+#'   \code{rootLengthList}, \code{rootXSpan}, \code{rootSysXSpan},
+#'   \code{rootYSpan}, \code{rootSysYSpan}, \code{rootZSpan},
+#'   \code{rootSysZSpan}, \code{rootOntology}, \code{plotRootSys},
+#'   \code{drawRoots2D}, \code{drawRoots3D}, \code{rootSysSurfArea},
+#'   \code{rootSysVol}
 #'
 #' @section Visualize effect sizes in a heatmap:
 #'
-#'   Functions: \code{bootstrap.model.z.heatmap}, \code{bootstrap.model.z},
-#'   \code{cutz.heatmap}, \code{extract.glht.z}, \code{long.to.wide.df},
-#'   \code{two.factor.interaction}
+#'   Functions: \code{bootstrapModelZHeatmap}, \code{bootstrapModelZ},
+#'   \code{heatmapper}, \code{glhtExtract}, \code{stretchDf},
+#'   \code{twoFactorInteraction}
 #'
 #' @section Principal Component Analysis (PCA):
 #'

@@ -13,9 +13,10 @@
 #' @return Returns \code{dat} but with indicated rows removed
 #'
 #' @examples
-#' sample.dat<-data.frame(class = c("Cntrl", "mutant-x"), length = rnorm(6, mean = 10), remove = c(NA, "yes", "no", 1, TRUE, FALSE))
-#' omit(sample.dat, "remove")
-#' omit(sample.dat, "remove", c(NA, "yes", 1))
+#' sample.dat <- data.frame(class = c("Cntrl", "mutant-x"), length = rnorm(6, mean = 10), remove = c(NA, "yes", "no", 1, TRUE, FALSE))
+#'
+#' omit(dat = sample.dat, omit.col = "remove")
+#' omit(dat = sample.dat, omit.col = "remove", indicator = c(NA, "yes", 1))
 #'
 #' @export
 omit <- function(dat, omit.col, indicator = NULL){

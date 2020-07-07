@@ -1,8 +1,8 @@
 #' @title Construct PCA and scree plots and rank genotypes by magnitude
 #'
-#' @description Generate PCA and scree plots simultaneously using ggplot2
-#'   package. Genotypes are also ranked by magnitude of loading scores and
-#'   listed in a data.frame.
+#' @description Generate Principal Component Analysis (PCA) and scree plots
+#'   simultaneously using ggplot2 package. Genotypes are also ranked by
+#'   magnitude of loading scores and listed in a data.frame.
 #'
 #' @import ggplot2 ggrepel reshape2 stats
 #'
@@ -16,8 +16,8 @@
 #' @param var character string of name of column with variables
 #' @param samples character string of name of column with samples
 #' @param category character string of name of column with categories
-#' @param PC which two PCs to plot? First and second values in numeric vector to
-#'   be plotted in x and y axes respectively
+#' @param PC which two principal components to plot? First and second values in
+#'   numeric vector to be plotted in x and y axes respectively
 #' @param ranks how many of the top variables with the highest magnitudes of
 #'   loading scores from the PCs indicated in \code{PC} to list?
 #'
@@ -35,7 +35,7 @@
 #' pcaMat(matrix = t(exparray), ranks = 5)
 #'
 #' data("expdf")
-#' pcaDf(expdf, value = "value", var = "genotype", samples = "treatment.time", category = "treatment", ranks = 5)
+#' pcaDf(df = expdf, value = "value", var = "genotype", samples = "treatment.time", category = "treatment", ranks = 5)
 #'
 #' @name pca
 NULL
