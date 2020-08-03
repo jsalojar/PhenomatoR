@@ -16,7 +16,7 @@
 #' @return A numeric value
 #'
 #' @examples
-#' data("sparse")
+#' data("sparse", package = "PhenomatoR")
 #'
 #' nChild(parent = sparse$scene$plant)
 #' nChild(parent = sparse$scene$plant$root)

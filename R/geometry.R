@@ -19,7 +19,7 @@
 #' @return A numeric value
 #'
 #' @examples
-#' data("sparse")
+#' data("sparse", package = "PhenomatoR")
 #'
 #' rootSysSurfArea(sparse$scene$plant)
 #'

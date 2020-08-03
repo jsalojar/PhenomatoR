@@ -18,6 +18,8 @@
 #'   numeric value, while \code{rootLengthList} returns a list.
 #'
 #' @examples
+#' data("sparse", package = "PhenomatoR")
+#'
 #' ##length of primary root
 #' rootLength(root = sparse$scene$plant$root)
 #'

@@ -10,22 +10,24 @@
 #'   build/organise dataset, visualize effect sizes in a heatmap, and conduct
 #'   principal component analysis (PCA).
 #'
+#' @keywords internal
+#'
 #' @section Build/organise dataset:
 #'
-#'   This section can be further divided into 2 categories: general and specific
-#'   to rsml files.
+#'   This section can be further divided into 2 categories: general for all
+#'   data.frames and RSML-specific.
 #'
-#'   General functions: \code{nominalToCount}, \code{nominalToOrdinal},
-#'   \code{omit}
+#'   General for all data.frames functions: \code{nominalToCount},
+#'   \code{nominalToOrdinal}, \code{omit}
 #'
-#'   RSML functions: \code{rsmlImport}, \code{buildRow}, \code{rsmlToDf},
-#'   \code{metaToDf}, \code{nChild}, \code{nDescendants}, \code{rsmlExtract0},
-#'   \code{rsmlExtract}, \code{rootLength}, \code{rootSysLength},
-#'   \code{rootLengthList}, \code{rootXSpan}, \code{rootSysXSpan},
-#'   \code{rootYSpan}, \code{rootSysYSpan}, \code{rootZSpan},
-#'   \code{rootSysZSpan}, \code{rootOntology}, \code{plotRootSys},
-#'   \code{drawRoots2D}, \code{drawRoots3D}, \code{rootSysSurfArea},
-#'   \code{rootSysVol}
+#'   RSML-specific functions: \code{rsmlImport}, \code{buildRow},
+#'   \code{rsmlToDf}, \code{metaToDf}, \code{nChild}, \code{nDescendants},
+#'   \code{rsmlExtract0}, \code{rsmlExtract}, \code{rootLength},
+#'   \code{rootSysLength}, \code{rootLengthList}, \code{rootXSpan},
+#'   \code{rootSysXSpan}, \code{rootYSpan}, \code{rootSysYSpan},
+#'   \code{rootZSpan}, \code{rootSysZSpan}, \code{rootOntology},
+#'   \code{plotRootSys}, \code{drawRoots2D}, \code{drawRoots3D},
+#'   \code{rootSysSurfArea}, \code{rootSysVol}, \code{rootOntology}
 #'
 #' @section Visualize effect sizes in a heatmap:
 #'

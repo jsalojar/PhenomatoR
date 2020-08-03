@@ -23,6 +23,8 @@
 #'   the final element of \code{route}.
 #'
 #' @examples
+#' data("sparse", package = "PhenomatoR")
+#'
 #' ##extract coordinates from all roots
 #' res1 <- rsmlExtract0(sparse$scene$plant, list("root", "geometry", "polyline"))
 #' View(res1)

@@ -7,7 +7,7 @@
 #' @return A single-row data.frame.
 #'
 #' @examples
-#' data("sparse")
+#' data("sparse", package = "PhenomatoR")
 #' metaToDf(sparse)
 #'
 #' @export

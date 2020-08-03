@@ -10,7 +10,7 @@
 #' @return Single-row matrix
 #'
 #' @examples
-#' data("sparse")
+#' data("sparse", package = "PhenomatoR")
 #' rootOntology(sparse$scene$plant)
 #'
 #' @export

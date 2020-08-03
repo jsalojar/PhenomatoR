@@ -1,6 +1,6 @@
 #' @title Construct PCA and scree plots and rank genotypes by magnitude
 #'
-#' @description Generate Principal Component Analysis (PCA) and scree plots
+#' @description Generate Principal Component Analysis (PCA) graphs and scree plots
 #'   simultaneously using ggplot2 package. Genotypes are also ranked by
 #'   magnitude of loading scores and listed in a data.frame.
 #'
@@ -21,21 +21,28 @@
 #' @param ranks how many of the top variables with the highest magnitudes of
 #'   loading scores from the PCs indicated in \code{PC} to list?
 #'
-#' @return List of 3 elements:
+#' @return List of 4 elements:
 #'
-#'   1. PCA plot
+#'   1. "data": List with class "prcomp" from \code{\link[stats]{prcomp}}
 #'
-#'   2. Scree plot
+#'   2. "pca": PCA plot
 #'
-#'   3. Data.frame with \code{ranks} number of variables with the highest
+#'   3. "scree.plot": Scree plot
+#'
+#'   4. "loading.scores": Data.frame with \code{ranks} number of variables with the highest
 #'   magnitudes of loading scores from each PC listed in \code{PC}.
 #'
 #' @examples
-#' data("exparray")
-#' pcaMat(matrix = t(exparray), ranks = 5)
+#' data("expMat", package = "PhenomatoR")
+#' pcaMat(matrix = t(expMat), ranks = 5)
 #'
-#' data("expdf")
-#' pcaDf(df = expdf, value = "value", var = "genotype", samples = "treatment.time", category = "treatment", ranks = 5)
+#' data("expDf", package = "PhenomatoR")
+#' pcaDf(df = expDf,
+#'       value = "value",
+#'       var = "genotype",
+#'       samples = "treatment.time",
+#'       category = "treatment",
+#'       ranks = 5)
 #'
 #' @name pca
 NULL
@@ -89,7 +96,7 @@ pcaMat <- function(matrix, PC = c(1, 2), ranks = ncol(matrix)) {
   out<-list()
   out[["data"]]<-pca.data
   out[["scree.plot"]]<-bar.plot
-  out[["PCA"]]<-pca.plot
+  out[["pca"]]<-pca.plot
   out[["loading.scores"]]<-loading.scores
   return(out)
 }
@@ -165,7 +172,7 @@ pcaDf<-function(df, value, var, samples, category, PC = c(1, 2), ranks = length(
   out<-list()
   out[["data"]]<-pca.data
   out[["scree.plot"]]<-bar.plot
-  out[["PCA"]]<-pca.plot
+  out[["pca"]]<-pca.plot
   out[["loading.scores"]]<-loading.scores
   return(out)
 }
