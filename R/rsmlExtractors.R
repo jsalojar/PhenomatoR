@@ -27,15 +27,15 @@
 #'
 #' ##extract coordinates from all roots
 #' res1 <- rsmlExtract0(sparse$scene$plant, list("root", "geometry", "polyline"))
-#' View(res1)
+#' ## View(res1)
 #'
 #' ##extract only x coordinates from all roots
 #' res2 <- rsmlExtract(sparse$scene$plant, list("root", "geometry", "polyline", list("point", "x")))
-#' View(res2)
+#' ## View(res2)
 #'
 #' ##When you do not specify a nested list in route argument, only the first point is accessed
 #' res3 <- rsmlExtract(sparse$scene$plant, list("root", "geometry", "polyline", "point", "x"))
-#' View(res3)
+#' ## View(res3)
 #'
 #' @name rsmlExtractors
 NULL
